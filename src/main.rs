@@ -1,36 +1,46 @@
-use std::env;
+// use std::env;
 use dotenv::dotenv;
-use hyper_tls::HttpsConnector;
-use hyper::{Client, Uri, Request, Method, Body, body::HttpBody as _};
+// use hyper_tls::HttpsConnector;
+use futures::{stream, StreamExt};
+use hyper::{
+    Client,
+    // Uri,
+    // Request,
+    // Method,
+    // Body,
+    body::HttpBody as _
+};
+use std::fs::OpenOptions;
+use std::io::Write;
+
+// const PARALLEL_REQUESTS: usize = 2;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
 
-    let id = env::var("UNIQUE_ID").expect("variabel UNIQUE_ID belum didefinisikan");
-    let data_url = env::var("FETCH_URL_BBTA3").expect("variabel FETCH_URL_BBTA3 belum didefinisikan");
-    let url = data_url.parse::<Uri>()?;
+    let url = "http://jsonplaceholder.typicode.com/posts/";
+    let client = Client::new();
 
-    let https = HttpsConnector::new();
-    let client = Client::builder().build::<_, Body>(https);
-    let req = Request::builder()
-        .method(Method::GET)
-        .uri(url)
-        .header("content-type", "application/json")
-        .header("Authorization", format!("{} {}", "bearer", id))
-        .body(Body::from(""))
-        .unwrap();
+    let stream = stream::iter(1..=3);
+    stream.map(|x| {
+        let uri = format!("{}{}", url, x);
 
-    let mut resp = client.request(req).await?;
+        let resp = client.get(uri.parse().unwrap());
 
-    println!("Response: {:?}", resp.status());
+        resp
+    }).then(|resp| async {
+        let hasil = resp.await.unwrap();
 
-    // melakukan iterasi untuk StreamBody secara asynchronous
-    while let Some(chunk) = resp.body_mut().data().await {
-        let bin = chunk?;
-        let data = std::str::from_utf8(&bin)?;
-        println!("{}", data);
-    }
+        hasil
+    }).for_each(|mut body| async move{
+        while let Some(chunk) = body.body_mut().data().await {
+            let chunk = chunk.unwrap();
+
+            let mut file = OpenOptions::new().append(true).create(true).open("coba.txt").expect("unable to create a file");
+            file.write_all(&chunk).expect("unable to write");
+        }
+    }).await;
 
     Ok(())
 }
