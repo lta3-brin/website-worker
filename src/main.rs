@@ -1,15 +1,27 @@
 use std::env;
 use dotenv::dotenv;
-use hyper::{Client, Uri, body::HttpBody as _};
+use hyper_tls::HttpsConnector;
+use hyper::{Client, Uri, Request, Method, Body, body::HttpBody as _};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
 
-    let data_url = env::var("FETCH_URL").expect("variabel FETCH_URL belum didefinisikan");
+    let id = env::var("UNIQUE_ID").expect("variabel UNIQUE_ID belum didefinisikan");
+    let data_url = env::var("FETCH_URL_BBTA3").expect("variabel FETCH_URL_BBTA3 belum didefinisikan");
     let url = data_url.parse::<Uri>()?;
-    let client = Client::new();
-    let mut resp = client.get(url).await?;
+
+    let https = HttpsConnector::new();
+    let client = Client::builder().build::<_, Body>(https);
+    let req = Request::builder()
+        .method(Method::GET)
+        .uri(url)
+        .header("content-type", "application/json")
+        .header("Authorization", format!("{} {}", "bearer", id))
+        .body(Body::from(""))
+        .unwrap();
+
+    let mut resp = client.request(req).await?;
 
     println!("Response: {:?}", resp.status());
 
