@@ -1,15 +1,15 @@
-// use std::env;
+use std::env;
 use dotenv::dotenv;
 use serde_json::Value;
 use std::fs::File;
-// use hyper_tls::HttpsConnector;
+use hyper_tls::HttpsConnector;
 use futures::{stream, StreamExt};
 use hyper::{
     Client,
-    // Uri,
-    // Request,
-    // Method,
-    // Body,
+    Uri,
+    Request,
+    Method,
+    Body,
     body::HttpBody as _
 };
 
@@ -17,29 +17,49 @@ use hyper::{
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
 
-    let url = "http://jsonplaceholder.typicode.com/posts/";
-    let client = Client::new();
+    let id = env::var("UNIQUE_ID").expect("variabel UNIQUE_ID belum didefinisikan");
+    let data_url_bbta3 = env::var("FETCH_URL_BBTA3").expect("variabel FETCH_URL_BBTA3 belum didefinisikan");
+    let url_bbta3 = data_url_bbta3.parse::<Uri>()?;
 
-    let stream = stream::iter(1..=3);
-    let stream = stream.map(|x| {
-        let uri = format!("{}{}", url, x);
+    let https = HttpsConnector::new();
+    let client = Client::builder().build::<_, Body>(https);
 
-        let resp = client.get(uri.parse().unwrap());
+    let stream = stream::iter(vec![url_bbta3]);
+
+    stream.map(|url| {
+        let req = Request::builder()
+            .method(Method::GET)
+            .uri(url)
+            .header("content-type", "application/json")
+            .header("Authorization", format!("{} {}", "bearer", id))
+            .body(Body::from(""))
+            .unwrap();
+
+        let resp = client.request(req);
 
         resp
     }).then(|resp| async {
-        let mut hasil = resp.await.unwrap();
+        let hasil = resp.await.unwrap();
 
-        let body_bin = hasil.body_mut().data().await.unwrap().unwrap();
-        let body_str = std::str::from_utf8(&body_bin).unwrap();
-        let body: Value = serde_json::from_str(&body_str).unwrap();
+        hasil
+    }).for_each(|mut resp| async move {
+        let mut obj = "".to_string();
 
-        body
-    });
+        while let Some(chunk) = resp.body_mut().data().await {
+            let chunk = chunk.unwrap();
+            let chunk_str = std::str::from_utf8(&chunk).unwrap();
 
-    let obj = stream.collect::<Vec<Value>>().await;
+            obj.push_str(chunk_str);
+        }
 
-    serde_json::to_writer_pretty(File::create("uji.json").unwrap(), &obj).unwrap();
+        let items: Vec<Value> = serde_json::from_str(obj.as_str()).unwrap();
+
+        for item in items {
+            println!("{}", item["id"])
+        }
+    }).await;
+
+    // serde_json::to_writer_pretty(File::create("uji.json").unwrap(), &o).unwrap();
 
     Ok(())
 }
