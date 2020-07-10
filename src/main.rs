@@ -1,5 +1,7 @@
 // use std::env;
 use dotenv::dotenv;
+use serde_json::Value;
+use std::fs::File;
 // use hyper_tls::HttpsConnector;
 use futures::{stream, StreamExt};
 use hyper::{
@@ -10,8 +12,6 @@ use hyper::{
     // Body,
     body::HttpBody as _
 };
-use std::fs::OpenOptions;
-use std::io::Write;
 
 // const PARALLEL_REQUESTS: usize = 2;
 
@@ -33,12 +33,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let hasil = resp.await.unwrap();
 
         hasil
-    }).for_each(|mut body| async move{
+    }).for_each(|mut body| async move {
         while let Some(chunk) = body.body_mut().data().await {
             let chunk = chunk.unwrap();
+            let obj_str = std::str::from_utf8(&chunk).unwrap();
+            let obj: Value = serde_json::from_str(&obj_str).unwrap();
 
-            let mut file = OpenOptions::new().append(true).create(true).open("coba.txt").expect("unable to create a file");
-            file.write_all(&chunk).expect("unable to write");
+            serde_json::to_writer_pretty(File::create("uji.json").unwrap(), &obj)
+                .expect("Tidak dapat membuat file json")
         }
     }).await;
 
