@@ -1,3 +1,5 @@
+mod models;
+
 use std::env;
 use dotenv::dotenv;
 use serde_json::Value;
@@ -13,10 +15,13 @@ use hyper::{
     body::HttpBody as _
 };
 
+use models::berita::Berita;
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
 
+    let berita:Vec<Berita> = vec![];
     let id = env::var("UNIQUE_ID").expect("variabel UNIQUE_ID belum didefinisikan");
     let data_url_bbta3 = env::var("FETCH_URL_BBTA3").expect("variabel FETCH_URL_BBTA3 belum didefinisikan");
     let url_bbta3 = data_url_bbta3.parse::<Uri>()?;
@@ -55,7 +60,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let items: Vec<Value> = serde_json::from_str(obj.as_str()).unwrap();
 
         for item in items {
-            println!("{}", item["id"])
+            let mut media = "".to_string();
+
+            if item["entities"]["media"].to_string().is_empty() {
+                media = "".to_string();
+            } else {
+                media = item["entities"]["media"]["media_url_https"].to_string()
+            }
+
+            let kabar = Berita {
+                deskripsi: item["full_text"].to_string(),
+                thumbnail: media,
+                tanggal: item["created_at"].to_string(),
+                kategori: item["user"]["name"].to_string()
+            };
+
+            println!("{:?}", kabar)
         }
     }).await;
 
