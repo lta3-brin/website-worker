@@ -1,9 +1,9 @@
 mod models;
+mod handlers;
 
 use std::env;
 use dotenv::dotenv;
 use serde_json::Value;
-use std::fs::File;
 use hyper_tls::HttpsConnector;
 use futures::{stream, StreamExt};
 use hyper::{
@@ -15,7 +15,7 @@ use hyper::{
     body::HttpBody as _
 };
 
-use models::berita::Berita;
+use handlers::parsing;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -25,11 +25,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let data_url_bbta3 = env::var("FETCH_URL_BBTA3").expect("variabel FETCH_URL_BBTA3 belum didefinisikan");
     let url_bbta3 = data_url_bbta3.parse::<Uri>()?;
+    let data_url_bppt = env::var("FETCH_URL_BPPT").expect("variabel FETCH_URL_BBTA3 belum didefinisikan");
+    let url_bppt = data_url_bppt.parse::<Uri>()?;
 
     let https = HttpsConnector::new();
     let client = Client::builder().build::<_, Body>(https);
 
-    let stream = stream::iter(vec![url_bbta3]);
+    let stream = stream::iter(vec![url_bbta3, url_bppt]);
 
     stream.map(|url| {
         let req = Request::builder()
@@ -57,21 +59,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             obj.push_str(chunk_str);
         }
 
-        let items: Vec<Value> = serde_json::from_str(obj.as_str()).unwrap();
+        let items: Value = serde_json::from_str(obj.as_str()).unwrap();
 
-        let mut berita:Vec<Berita> = Vec::new();
-        for item in items {
-            let kabar = Berita {
-                deskripsi: item["full_text"].to_owned(),
-                thumbnail: item["entities"]["media"][0]["media_url_https"].to_owned(),
-                tanggal: item["created_at"].to_owned(),
-                kategori: item["user"]["name"].to_owned()
-            };
+        match items.as_array() {
+            None => {
+                let coll = items["statuses"].as_array().expect("Gagal parsing Array statuses");
 
-            berita.push(kabar);
+                parsing::berita(coll);
+            },
+            Some(coll) => {
+                parsing::berita(coll);
+            },
         }
-
-        serde_json::to_writer_pretty(File::create("uji.json").unwrap(), &berita).unwrap();
     }).await;
 
     Ok(())
