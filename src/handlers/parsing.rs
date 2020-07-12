@@ -1,9 +1,8 @@
-use std::fs::File;
 use serde_json::Value;
 
 use crate::models::berita::Berita;
 
-pub fn berita(items: &Vec<Value>) {
+pub fn berita(items: &Vec<Value>) -> Vec<Berita> {
     let mut berita:Vec<Berita> = Vec::new();
 
     for item in items {
@@ -17,5 +16,5 @@ pub fn berita(items: &Vec<Value>) {
         berita.push(kabar);
     }
 
-    serde_json::to_writer_pretty(File::create("uji.json").unwrap(), &berita).unwrap();
+    berita
 }
