@@ -15,7 +15,8 @@ use hyper::{
     body::HttpBody as _
 };
 
-use handlers::parsing;
+use handlers::{parsing, saving};
+use models::berita::Berita;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -33,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let stream = stream::iter(vec![url_bbta3, url_bppt]);
 
-    stream.map(|url| {
+    let stream = stream.map(|url| {
         let req = Request::builder()
             .method(Method::GET)
             .uri(url)
@@ -46,13 +47,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         resp
     }).then(|resp| async {
-        let hasil = resp.await.unwrap();
+        let mut hasil = resp.await.unwrap();
 
-        hasil
-    }).for_each(|mut resp| async move {
         let mut obj = "".to_string();
 
-        while let Some(chunk) = resp.body_mut().data().await {
+        while let Some(chunk) = hasil.body_mut().data().await {
             let chunk = chunk.unwrap();
             let chunk_str = std::str::from_utf8(&chunk).unwrap();
 
@@ -65,13 +64,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             None => {
                 let coll = items["statuses"].as_array().expect("Gagal parsing Array statuses");
 
-                parsing::berita(coll);
+                parsing::berita(coll)
             },
             Some(coll) => {
-                parsing::berita(coll);
+                parsing::berita(coll)
             },
         }
-    }).await;
+    });
+
+    let array_berita = stream.collect::<Vec<Vec<Berita>>>().await;
+
+    saving::save_berita(array_berita);
 
     Ok(())
 }
