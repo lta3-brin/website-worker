@@ -1,7 +1,10 @@
-#[derive(Debug)]
+use serde::Serialize;
+use serde_json::Value;
+
+#[derive(Debug, Serialize)]
 pub struct Berita {
-    pub deskripsi: String,
-    pub thumbnail: String,
-    pub tanggal: String,
-    pub kategori: String
+    pub deskripsi: Value,
+    pub thumbnail: Value,
+    pub tanggal: Value,
+    pub kategori: Value
 }
