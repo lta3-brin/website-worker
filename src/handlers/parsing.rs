@@ -7,6 +7,7 @@ pub fn berita(items: &Vec<Value>) -> Vec<Berita> {
 
     for item in items {
         let kabar = Berita {
+            id: item["id_str"].to_owned(),
             deskripsi: item["full_text"].to_owned(),
             thumbnail: item["entities"]["media"][0]["media_url_https"].to_owned(),
             tanggal: item["created_at"].to_owned(),
