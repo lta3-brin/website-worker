@@ -1,4 +1,6 @@
-#[derive(Debug)]
+use serde::Serialize;
+
+#[derive(Debug, Serialize)]
 pub struct Berita {
     pub deskripsi: String,
     pub thumbnail: String,
