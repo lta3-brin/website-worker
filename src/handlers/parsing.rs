@@ -1,6 +1,7 @@
-use serde_json::Value;
+use serde_json::{json, Value};
 
 use crate::models::berita::Berita;
+use crate::helpers::utility;
 
 pub fn berita(items: &Vec<Value>) -> Vec<Berita> {
     let mut berita:Vec<Berita> = Vec::new();
@@ -10,7 +11,7 @@ pub fn berita(items: &Vec<Value>) -> Vec<Berita> {
             id: item["id_str"].to_owned(),
             deskripsi: item["full_text"].to_owned(),
             thumbnail: item["entities"]["media"][0]["media_url_https"].to_owned(),
-            tanggal: item["created_at"].to_owned(),
+            tanggal: json!(utility::build_date(item["created_at"].as_str().unwrap())),
             kategori: item["user"]["screen_name"].to_owned()
         };
 
