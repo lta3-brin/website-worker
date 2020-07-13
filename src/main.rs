@@ -19,11 +19,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let data_url_bbta3 = env::var("FETCH_URL_BBTA3").expect("variabel FETCH_URL_BBTA3 belum didefinisikan");
     let data_url_bppt = env::var("FETCH_URL_BPPT").expect("variabel FETCH_URL_BBTA3 belum didefinisikan");
+    let data_url_video = env::var("FETCH_URL_VIDEO").expect("variabel FETCH_URL_VIDEO belum didefinisikan");
 
     let url_bbta3 = data_url_bbta3.parse::<Uri>()?;
     let url_bppt = data_url_bppt.parse::<Uri>()?;
+    let url_video = data_url_video.parse::<Uri>()?;
 
-    let stream = stream::iter(vec![url_bbta3, url_bppt])
+    let stream = stream::iter(vec![url_bbta3, url_bppt, url_video])
         .map(building::response)
         .then(building::process);
 
