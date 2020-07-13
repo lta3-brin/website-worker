@@ -1,11 +1,7 @@
 use chrono::prelude::NaiveDate;
 
-pub fn build_date(tanggal: &str) -> String {
-    let dt = NaiveDate::parse_from_str(tanggal, "%a %b %d %H:%M:%S %z %Y")
-        .expect("Formatting date gagal dilakukan");
-
-    let date = dt.format("%A, %d %B %Y").to_string();
-    let date = date
+fn replace_text(date: NaiveDate) -> String {
+    date.format("%A, %d %B %Y").to_string()
         .replace("January", "Januari")
         .replace("February", "Februari")
         .replace("March", "Maret")
@@ -21,7 +17,19 @@ pub fn build_date(tanggal: &str) -> String {
         .replace("Thursday", "Kamis")
         .replace("Friday", "Jum'at")
         .replace("Saturday", "Sabtu")
-        .replace("Sunday", "Ahad");
+        .replace("Sunday", "Ahad")
+}
 
-    date
+pub fn build_date(tanggal: &str) -> String {
+    let dt = NaiveDate::parse_from_str(tanggal, "%a %b %d %H:%M:%S %z %Y")
+        .expect("Formatting date gagal dilakukan");
+
+    replace_text(dt)
+}
+
+pub fn build_date_yt(tanggal: &str) -> String {
+    let dt = NaiveDate::parse_from_str(tanggal, "%Y-%m-%dT%H:%M:%SZ")
+        .expect("Formatting date youtube gagal dilakukan");
+
+    replace_text(dt)
 }
