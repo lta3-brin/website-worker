@@ -41,9 +41,17 @@ pub async fn process(resp: ResponseFuture) -> Vec<Berita> {
 
     match items.as_array() {
         None => {
-            let coll = items["statuses"].as_array().expect("Gagal parsing Array statuses");
+            if items["kind"].to_string().contains("youtube") {
+                let coll = items["items"].as_array()
+                    .expect("Gagal parsing Array video items");
 
-            parsing::berita(coll)
+                parsing::berita(coll)
+            } else {
+                let coll = items["statuses"].as_array()
+                    .expect("Gagal parsing Array twitter statuses");
+
+                parsing::berita(coll)
+            }
         },
         Some(coll) => {
             parsing::berita(coll)
