@@ -18,8 +18,8 @@ use handlers::{
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
 
-    let version = env::var("CARGO_PKG_VERSION").unwrap();
-    let author = env::var("CARGO_PKG_AUTHORS").unwrap();
+    let version = env!("CARGO_PKG_VERSION");
+    let author = env!("CARGO_PKG_AUTHORS");
     let data_url_bbta3 = env::var("FETCH_URL_BBTA3").expect("variabel FETCH_URL_BBTA3 belum didefinisikan");
     let data_url_bppt = env::var("FETCH_URL_BPPT").expect("variabel FETCH_URL_BBTA3 belum didefinisikan");
     let data_url_video = env::var("FETCH_URL_VIDEO").expect("variabel FETCH_URL_VIDEO belum didefinisikan");
@@ -29,7 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let url_video = data_url_video.parse::<Uri>()?;
 
     let app = App::new("Web Worker CLI BBTA3 BPPT")
-        .version(version.as_str()).author(author.as_str())
+        .version(version).author(author)
         .about("CLI untuk fetch data Twitter dan Youtube API BBTA3 BPPT")
         .arg(Arg::with_name("path")
             .short("p")
