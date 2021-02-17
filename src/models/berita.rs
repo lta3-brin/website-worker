@@ -1,11 +1,34 @@
 use serde::Serialize;
-use serde_json::Value;
+
+
+#[derive(Debug)]
+pub enum Konten {
+    Video,
+    Berita
+}
 
 #[derive(Debug, Serialize)]
 pub struct Berita {
-    pub id: Value,
-    pub deskripsi: Value,
-    pub thumbnail: Value,
-    pub tanggal: Value,
-    pub kategori: Value
+    id: String,
+    deskripsi: String,
+    thumbnail: String,
+    tanggal: String,
+    kategori: String
+}
+
+impl Berita {
+    pub fn new(
+        id: String,
+        deskripsi: String,
+        thumbnail: String,
+        tanggal: String,
+        kategori: String) -> Self {
+        Self {
+            id,
+            deskripsi,
+            thumbnail,
+            tanggal,
+            kategori
+        }
+    }
 }
