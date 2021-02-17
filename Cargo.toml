@@ -1,18 +1,14 @@
 [package]
 name = "website-worker"
-version = "0.4.0"
+version = "1.0.0"
 authors = ["Arizal Akbar Zikri <akbarpn136@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hyper = "0.13.6"
-dotenv = "0.15.0"
-futures = "0.3.5"
-serde_json = "1.0.56"
-hyper-tls = "0.4.3"
-clap = "2.33.1"
-serde = { version = "1.0.114", features = ["derive"] }
-tokio = { version = "0.2.21", features = ["full"] }
-chrono = { version = "0.4.13", features = ["serde"] }
+serde_json = "1.0"
+reqwest = { version = "0", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.2", features = ["full"] }
+chrono = { version = "0.4", features = ["serde"] }
