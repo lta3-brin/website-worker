@@ -1,8 +1,15 @@
+use std::env;
 use serde_json::Value;
 
-use crate::models::berita::{Berita, Konten};
-use crate::models::error::AppErrors;
-use crate::helpers::parse::parse_to_konten;
+use crate::models::{
+    error::AppErrors,
+    berita::{Berita, Konten},
+};
+use crate::helpers::{
+    save::save_content,
+    parse::parse_to_konten,
+};
+use crate::handlers::fetching::konten;
 
 pub fn process_video(response: Value) -> Result<Vec<Berita>, AppErrors> {
     if let Some(koleksi) = response.as_object() {
@@ -68,4 +75,33 @@ pub fn process_berita(response: Value) -> Result<Vec<Berita>, AppErrors> {
             ))
         }
     }
+}
+
+pub async fn process_collection(collection: Vec<String>) -> Result<(), AppErrors> {
+    let path = env::var("SAVE_PATH")?;
+    let mut berita = Vec::<Vec<Berita>>::new();
+
+    for satuan in collection {
+        let token_berita = env::var("NEWS_API")?;
+        let handle = tokio::spawn(async move {
+            let data = konten(
+                satuan.as_str(),
+                &token_berita
+            ).await;
+
+            data
+        });
+
+        let result = handle.await??;
+        berita.push(result);
+    }
+
+    let mut konten = Vec::<Berita>::new();
+    for brt in berita {
+        for b in brt {
+            konten.push(b);
+        }
+    }
+
+    Ok(save_content(konten, &path)?)
 }
