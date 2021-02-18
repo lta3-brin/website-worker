@@ -1,0 +1,18 @@
+pub fn replace_text(tanggal: String) -> String {
+    tanggal.replace("January", "Januari")
+        .replace("February", "Februari")
+        .replace("March", "Maret")
+        .replace("May", "Mei")
+        .replace("June", "Juni")
+        .replace("July", "Juli")
+        .replace("August", "Agustus")
+        .replace("October", "Oktober")
+        .replace("December", "Desember")
+        .replace("Monday", "Senin")
+        .replace("Tuesday", "Selasa")
+        .replace("Wednesday", "Rabu")
+        .replace("Thursday", "Kamis")
+        .replace("Friday", "Jum'at")
+        .replace("Saturday", "Sabtu")
+        .replace("Sunday", "Ahad")
+}
