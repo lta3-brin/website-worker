@@ -8,12 +8,6 @@ on:
 jobs:
   build_worker:
     name: Build Worker
-    env:
-      NEWS_API: ${{ secrets.NEWS_API }}
-      FETCH_BBTA3_URL: ${{ secrets.FETCH_BBTA3_URL }}
-      FETCH_BPPT_URL: ${{ secrets.FETCH_BPPT_URL }}
-      FETCH_VIDEO_URL: ${{ secrets.FETCH_VIDEO_URL }}
-      SAVE_PATH: ${{ secrets.SAVE_PATH }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Latest Version
