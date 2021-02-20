@@ -1,4 +1,4 @@
-name: Auto Draft Release
+name: Building Website Worker
 
 on:
   push:
@@ -6,7 +6,27 @@ on:
       - main
 
 jobs:
+  build_worker:
+    name: Build Worker
+    env:
+      NEWS_API: ${{ secrets.NEWS_API }}
+      FETCH_BBTA3_URL: ${{ secrets.FETCH_BBTA3_URL }}
+      FETCH_BPPT_URL: ${{ secrets.FETCH_BPPT_URL }}
+      FETCH_VIDEO_URL: ${{ secrets.FETCH_VIDEO_URL }}
+      SAVE_PATH: ${{ secrets.SAVE_PATH }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --all-features
+
   update_release_draft:
+    name: Update Release Draft
     runs-on: ubuntu-latest
     steps:
       - uses: release-drafter/release-drafter@v5
