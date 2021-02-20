@@ -22,6 +22,14 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v1
+        with:
+          envkey_NEWS_API: ${{ secrets.NEWS_API }}
+          envkey_FETCH_BBTA3_URL: ${{ secrets.FETCH_BBTA3_URL }}
+          envkey_FETCH_BPPT_URL: ${{ secrets.FETCH_BPPT_URL }}
+          envkey_FETCH_VIDEO_URL: ${{ secrets.FETCH_VIDEO_URL }}
+          envkey_SAVE_PATH: ${{ secrets.SAVE_PATH }}
       - name: Build Worker Using Cargo
         uses: actions-rs/cargo@v1
         with:
@@ -32,5 +40,5 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: worker
-          files: target/release
+          files: target/release/website-worker
           allow_override: true
